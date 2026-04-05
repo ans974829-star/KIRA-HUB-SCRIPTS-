@@ -14,7 +14,7 @@ local Config = {
     Background = "rbxassetid://115176468843783",
     
     -- Links
-    KeyLinkServer = "https://linkunlocker.com/kira-hub-or-hoho-key-or-step-1-mtzr9",
+    LinkvertiseServer = "https://linkunlocker.com/kira-hub-or-hoho-key-or-step-1-mtzr9",
     
     -- Key Settings
     CorrectKey = "KIRAHOHOKEY", -- ⚠️ CHANGE THIS TO YOUR ACTUAL KEY
@@ -394,30 +394,30 @@ local VerifyCorner = Instance.new("UICorner")
 VerifyCorner.CornerRadius = UDim.new(0, 4)
 VerifyCorner.Parent = VerifyBtn
 
--- KeyLink Button
-local KeyLinkBtn = Instance.new("TextButton")
-KeyLinkBtn.Name = "KeyLinkBtn"
-KeyLinkBtn.Size = UDim2.new(1, 0, 0, 38)
-KeyLinkBtn.Position = UDim2.new(0, 0, 0, 175)
-KeyLinkBtn.BackgroundColor3 = Config.SecondaryBackground
-KeyLinkBtn.BorderSizePixel = 0
-KeyLinkBtn.AutoButtonColor = false
-KeyLinkBtn.Font = Enum.Font.GothamMedium
-KeyLinkBtn.Text = "GET KEY - KeyLink"
-KeyLinkBtn.TextColor3 = Config.TextPrimary
-KeyLinkBtn.TextSize = 12
-KeyLinkBtn.ZIndex = 5
-KeyLinkBtn.Parent = Content
+-- Linkvertise Button
+local LinkvertiseBtn = Instance.new("TextButton")
+LinkvertiseBtn.Name = "LinkvertiseBtn"
+LinkvertiseBtn.Size = UDim2.new(1, 0, 0, 38)
+LinkvertiseBtn.Position = UDim2.new(0, 0, 0, 175)
+LinkvertiseBtn.BackgroundColor3 = Config.SecondaryBackground
+LinkvertiseBtn.BorderSizePixel = 0
+LinkvertiseBtn.AutoButtonColor = false
+LinkvertiseBtn.Font = Enum.Font.GothamMedium
+LinkvertiseBtn.Text = "GET KEY - Linkvertise"
+LinkvertiseBtn.TextColor3 = Config.TextPrimary
+LinkvertiseBtn.TextSize = 12
+LinkvertiseBtn.ZIndex = 5
+LinkvertiseBtn.Parent = Content
 
-local KeyLinkCorner = Instance.new("UICorner")
-KeyLinkCorner.CornerRadius = UDim.new(0, 4)
-KeyLinkCorner.Parent = KeyLinkBtn
+local LinkvertiseCorner = Instance.new("UICorner")
+LinkvertiseCorner.CornerRadius = UDim.new(0, 4)
+LinkvertiseCorner.Parent = LinkvertiseBtn
 
-local KeyLinkStroke = Instance.new("UIStroke")
-KeyLinkStroke.Color = Config.BorderColor
-KeyLinkStroke.Thickness = 1
-KeyLinkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-KeyLinkStroke.Parent = KeyLinkBtn
+local LinkvertiseStroke = Instance.new("UIStroke")
+LinkvertiseStroke.Color = Config.BorderColor
+LinkvertiseStroke.Thickness = 1
+LinkvertiseStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+LinkvertiseStroke.Parent = LinkvertiseBtn
 
 -- Footer
 local Footer = Instance.new("Frame")
@@ -517,7 +517,7 @@ local function SetupButton(button, isAccent)
 end
 
 SetupButton(VerifyBtn, true)
-SetupButton(KeyLinkBtn, false)
+SetupButton(LinkvertiseBtn, false)
 
 CloseBtn.MouseEnter:Connect(function()
     Tween(CloseBtn, {TextColor3 = Config.ErrorColor}, 0.2)
@@ -599,18 +599,18 @@ VerifyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- KeyLink Button
-KeyLinkBtn.MouseButton1Click:Connect(function()
-    setclipboard(Config.KeyLinkServer)
+-- Linkvertise Button
+LinkvertiseBtn.MouseButton1Click:Connect(function()
+    setclipboard(Config.LinkvertiseServer)
     
-    local originalText = KeyLinkBtn.Text
-    KeyLinkBtn.Text = "LINK COPIED TO CLIPBOARD"
-    KeyLinkBtn.BackgroundColor3 = Config.InputBackground
+    local originalText = LinkvertiseBtn.Text
+    LinkvertiseBtn.Text = "LINK COPIED TO CLIPBOARD"
+    LinkvertiseBtn.BackgroundColor3 = Config.InputBackground
     
     task.wait(1.5)
     
-    KeyLinkBtn.Text = originalText
-    KeyLinkBtn.BackgroundColor3 = Config.SecondaryBackground
+    LinkvertiseBtn.Text = originalText
+    LinkvertiseBtn.BackgroundColor3 = Config.SecondaryBackground
 end)
 
 -- Close Button
