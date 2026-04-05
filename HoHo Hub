@@ -14,10 +14,10 @@ local Config = {
     Background = "rbxassetid://115176468843783",
     
     -- Links
-    DiscordServer = "https://discord.gg/ZH48pK5wen",
+    KeyLinkServer = "https://linkunlocker.com/kira-hub-or-hoho-key-or-step-1-mtzr9",
     
     -- Key Settings
-    CorrectKey = "IamKira", -- ⚠️ CHANGE THIS TO YOUR ACTUAL KEY
+    CorrectKey = "KIRAHOHOKEY", -- ⚠️ CHANGE THIS TO YOUR ACTUAL KEY
     KeySystemName = "KIRA",
     
     -- Professional Color Scheme
@@ -394,30 +394,30 @@ local VerifyCorner = Instance.new("UICorner")
 VerifyCorner.CornerRadius = UDim.new(0, 4)
 VerifyCorner.Parent = VerifyBtn
 
--- Discord Button
-local DiscordBtn = Instance.new("TextButton")
-DiscordBtn.Name = "DiscordBtn"
-DiscordBtn.Size = UDim2.new(1, 0, 0, 38)
-DiscordBtn.Position = UDim2.new(0, 0, 0, 175)
-DiscordBtn.BackgroundColor3 = Config.SecondaryBackground
-DiscordBtn.BorderSizePixel = 0
-DiscordBtn.AutoButtonColor = false
-DiscordBtn.Font = Enum.Font.GothamMedium
-DiscordBtn.Text = "GET KEY - DISCORD"
-DiscordBtn.TextColor3 = Config.TextPrimary
-DiscordBtn.TextSize = 12
-DiscordBtn.ZIndex = 5
-DiscordBtn.Parent = Content
+-- KeyLink Button
+local KeyLinkBtn = Instance.new("TextButton")
+KeyLinkBtn.Name = "KeyLinkBtn"
+KeyLinkBtn.Size = UDim2.new(1, 0, 0, 38)
+KeyLinkBtn.Position = UDim2.new(0, 0, 0, 175)
+KeyLinkBtn.BackgroundColor3 = Config.SecondaryBackground
+KeyLinkBtn.BorderSizePixel = 0
+KeyLinkBtn.AutoButtonColor = false
+KeyLinkBtn.Font = Enum.Font.GothamMedium
+KeyLinkBtn.Text = "GET KEY - KeyLink"
+KeyLinkBtn.TextColor3 = Config.TextPrimary
+KeyLinkBtn.TextSize = 12
+KeyLinkBtn.ZIndex = 5
+KeyLinkBtn.Parent = Content
 
-local DiscordCorner = Instance.new("UICorner")
-DiscordCorner.CornerRadius = UDim.new(0, 4)
-DiscordCorner.Parent = DiscordBtn
+local KeyLinkCorner = Instance.new("UICorner")
+KeyLinkCorner.CornerRadius = UDim.new(0, 4)
+KeyLinkCorner.Parent = KeyLinkBtn
 
-local DiscordStroke = Instance.new("UIStroke")
-DiscordStroke.Color = Config.BorderColor
-DiscordStroke.Thickness = 1
-DiscordStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-DiscordStroke.Parent = DiscordBtn
+local KeyLinkStroke = Instance.new("UIStroke")
+KeyLinkStroke.Color = Config.BorderColor
+KeyLinkStroke.Thickness = 1
+KeyLinkStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+KeyLinkStroke.Parent = KeyLinkBtn
 
 -- Footer
 local Footer = Instance.new("Frame")
@@ -517,7 +517,7 @@ local function SetupButton(button, isAccent)
 end
 
 SetupButton(VerifyBtn, true)
-SetupButton(DiscordBtn, false)
+SetupButton(KeyLinkBtn, false)
 
 CloseBtn.MouseEnter:Connect(function()
     Tween(CloseBtn, {TextColor3 = Config.ErrorColor}, 0.2)
@@ -599,18 +599,18 @@ VerifyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Discord Button
-DiscordBtn.MouseButton1Click:Connect(function()
-    setclipboard(Config.DiscordServer)
+-- KeyLink Button
+KeyLinkBtn.MouseButton1Click:Connect(function()
+    setclipboard(Config.KeyLinkServer)
     
-    local originalText = DiscordBtn.Text
-    DiscordBtn.Text = "LINK COPIED TO CLIPBOARD"
-    DiscordBtn.BackgroundColor3 = Config.InputBackground
+    local originalText = KeyLinkBtn.Text
+    KeyLinkBtn.Text = "LINK COPIED TO CLIPBOARD"
+    KeyLinkBtn.BackgroundColor3 = Config.InputBackground
     
     task.wait(1.5)
     
-    DiscordBtn.Text = originalText
-    DiscordBtn.BackgroundColor3 = Config.SecondaryBackground
+    KeyLinkBtn.Text = originalText
+    KeyLinkBtn.BackgroundColor3 = Config.SecondaryBackground
 end)
 
 -- Close Button
