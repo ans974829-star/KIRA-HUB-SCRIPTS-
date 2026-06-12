@@ -1,12 +1,10 @@
 local Config = {
-    -- Assets
     Logo = "rbxassetid://127031938614229",
-    Background = "rbxassetid://115176468843783",
+    Background = "rbxassetid://86307623084625",
     
-    -- Links
     DiscordServer = "https://discord.gg/ZH48pK5wen",
 
-    CorrectKey = "Join_Discord", -- ⚠️ CHANGE THIS TO YOUR ACTUAL KEY
+    CorrectKey = "Join_Discord",
     KeySystemName = "KIRA",
 
     MainBackground = Color3.fromRGB(18, 18, 18),
@@ -21,10 +19,9 @@ local Config = {
 }
 
 local function ExecuteMainScript()
-    print("✓ Kira Keysystem: Access Granted")
-    print("→ Executing main script...")
+    print("Kira Keysystem: Access Granted")
+    print("Executing main script...")
     
-    -- Your loadstring here:
     loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/507379e9f24d9931c456fcdc31b36466286bdc32aafb64ab6b936f579789ac49/download"))()
 end
 
@@ -33,10 +30,66 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
-print("[KIRA] Initializing keysystem...")
+print("[KIRA] Initializing keysystem with persistent storage...")
 
--- Check if key exists in getgenv()
-local function CheckStoredKey()
+if not isfolder("KIRA_KEYSYSTEM") then
+    makefolder("KIRA_KEYSYSTEM")
+end
+
+local KEY_FILE = "KIRA_KEYSYSTEM/stored_key.txt"
+local REMEMBER_FILE = "KIRA_KEYSYSTEM/remember_preference.txt"
+
+local function SaveKeyToFile(key)
+    pcall(function()
+        writefile(KEY_FILE, key)
+        print("[KIRA] Key saved to file system")
+    end)
+end
+
+local function SaveKeyToGetenv(key)
+    pcall(function()
+        if getgenv then
+            getgenv().KiraKey = key
+            getgenv().KiraKeyTime = os.time()
+            print("[KIRA] Key saved to getgenv()")
+        end
+    end)
+end
+
+local function SaveRememberPreference(value)
+    pcall(function()
+        writefile(REMEMBER_FILE, tostring(value))
+    end)
+end
+
+local function LoadRememberPreference()
+    local success, result = pcall(function()
+        if isfile(REMEMBER_FILE) then
+            local content = readfile(REMEMBER_FILE)
+            return content == "true"
+        end
+        return false
+    end)
+    return success and result or false
+end
+
+local function CheckStoredKeyFile()
+    local success, key = pcall(function()
+        if isfile(KEY_FILE) then
+            return readfile(KEY_FILE)
+        end
+        return nil
+    end)
+    
+    if success and key and key ~= "" then
+        print("[KIRA] Found stored key in file system")
+        return key
+    end
+    
+    return nil
+end
+
+local function CheckStoredKeyGetenv()
     local success, storedKey = pcall(function()
         if getgenv and getgenv().KiraKey then
             return getgenv().KiraKey
@@ -44,7 +97,7 @@ local function CheckStoredKey()
         return nil
     end)
     
-    if success and storedKey then
+    if success and storedKey and storedKey ~= "" then
         print("[KIRA] Found stored key in getgenv()")
         return storedKey
     end
@@ -52,30 +105,46 @@ local function CheckStoredKey()
     return nil
 end
 
--- Validate key function
 local function ValidateKey(key)
     return key == Config.CorrectKey
 end
 
--- Auto-verify if key is stored
-local storedKey = CheckStoredKey()
-if storedKey and ValidateKey(storedKey) then
-    print("[KIRA] ✓ Stored key validated successfully!")
-    print("[KIRA] Auto-authenticating...")
-    ExecuteMainScript()
-    return
-else
-    if storedKey then
-        print("[KIRA] ✗ Stored key is invalid or expired")
-        -- Clear invalid key
+local function AttemptAutoAuth()
+    local storedKeyFile = CheckStoredKeyFile()
+    local storedKeyGetenv = CheckStoredKeyGetenv()
+    local rememberEnabled = LoadRememberPreference()
+    
+    if rememberEnabled then
+        if storedKeyFile and ValidateKey(storedKeyFile) then
+            print("[KIRA] Auto-authenticating from file storage...")
+            task.wait(0.5)
+            ExecuteMainScript()
+            return true
+        end
+        
+        if storedKeyGetenv and ValidateKey(storedKeyGetenv) then
+            print("[KIRA] Auto-authenticating from getenv storage...")
+            task.wait(0.5)
+            ExecuteMainScript()
+            return true
+        end
+    end
+    
+    if storedKeyFile then
         pcall(function()
-            getgenv().KiraKey = nil
+            delfile(KEY_FILE)
         end)
     end
-    print("[KIRA] No valid stored key found, showing GUI...")
+    
+    return false
 end
 
--- Create ScreenGui
+if AttemptAutoAuth() then
+    return
+end
+
+print("[KIRA] No valid stored key found, showing GUI...")
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "KiraKeysystem"
 ScreenGui.ResetOnSpawn = false
@@ -83,14 +152,12 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 999
 ScreenGui.IgnoreGuiInset = true
 
--- Protection and parenting
 pcall(function()
     if syn and syn.protect_gui then
         syn.protect_gui(ScreenGui)
     end
 end)
 
--- Parent to appropriate location
 local parentSuccess = pcall(function()
     if gethui then
         ScreenGui.Parent = gethui()
@@ -103,7 +170,6 @@ if not parentSuccess then
     ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- Overlay (Blur Background)
 local Overlay = Instance.new("Frame")
 Overlay.Name = "Overlay"
 Overlay.Size = UDim2.new(1, 0, 1, 0)
@@ -114,7 +180,6 @@ Overlay.BorderSizePixel = 0
 Overlay.ZIndex = 1
 Overlay.Parent = ScreenGui
 
--- Main Container
 local MainContainer = Instance.new("Frame")
 MainContainer.Name = "MainContainer"
 MainContainer.Size = UDim2.new(0, 450, 0, 320)
@@ -125,19 +190,16 @@ MainContainer.ZIndex = 2
 MainContainer.Active = true
 MainContainer.Parent = ScreenGui
 
--- UICorner
 local ContainerCorner = Instance.new("UICorner")
 ContainerCorner.CornerRadius = UDim.new(0, 6)
 ContainerCorner.Parent = MainContainer
 
--- Border Accent
 local BorderAccent = Instance.new("UIStroke")
 BorderAccent.Color = Config.BorderColor
 BorderAccent.Thickness = 1
 BorderAccent.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 BorderAccent.Parent = MainContainer
 
--- Background Image Overlay
 local BackgroundImg = Instance.new("ImageLabel")
 BackgroundImg.Name = "BackgroundOverlay"
 BackgroundImg.Size = UDim2.new(1, 0, 1, 0)
@@ -152,7 +214,6 @@ local BgCorner = Instance.new("UICorner")
 BgCorner.CornerRadius = UDim.new(0, 6)
 BgCorner.Parent = BackgroundImg
 
--- Header Section
 local Header = Instance.new("Frame")
 Header.Name = "Header"
 Header.Size = UDim2.new(1, 0, 0, 60)
@@ -160,7 +221,6 @@ Header.BackgroundTransparency = 1
 Header.ZIndex = 3
 Header.Parent = MainContainer
 
--- Logo
 local LogoImage = Instance.new("ImageLabel")
 LogoImage.Name = "Logo"
 LogoImage.Size = UDim2.new(0, 32, 0, 32)
@@ -171,7 +231,6 @@ LogoImage.ImageColor3 = Config.AccentColor
 LogoImage.ZIndex = 4
 LogoImage.Parent = Header
 
--- Title
 local Title = Instance.new("TextLabel")
 Title.Name = "Title"
 Title.Size = UDim2.new(0, 200, 0, 20)
@@ -185,7 +244,6 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.ZIndex = 4
 Title.Parent = Header
 
--- Subtitle
 local Subtitle = Instance.new("TextLabel")
 Subtitle.Name = "Subtitle"
 Subtitle.Size = UDim2.new(0, 200, 0, 14)
@@ -199,21 +257,19 @@ Subtitle.TextXAlignment = Enum.TextXAlignment.Left
 Subtitle.ZIndex = 4
 Subtitle.Parent = Header
 
--- Close Button
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Name = "Close"
 CloseBtn.Size = UDim2.new(0, 32, 0, 32)
 CloseBtn.Position = UDim2.new(1, -52, 0, 14)
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.Text = "×"
+CloseBtn.Text = "x"
 CloseBtn.TextColor3 = Config.TextSecondary
 CloseBtn.TextSize = 20
 CloseBtn.AutoButtonColor = false
 CloseBtn.ZIndex = 5
 CloseBtn.Parent = Header
 
--- Divider Line
 local Divider = Instance.new("Frame")
 Divider.Name = "Divider"
 Divider.Size = UDim2.new(1, -40, 0, 1)
@@ -223,7 +279,6 @@ Divider.BorderSizePixel = 0
 Divider.ZIndex = 3
 Divider.Parent = MainContainer
 
--- Content Area
 local Content = Instance.new("Frame")
 Content.Name = "Content"
 Content.Size = UDim2.new(1, -40, 0, 220)
@@ -232,7 +287,6 @@ Content.BackgroundTransparency = 1
 Content.ZIndex = 3
 Content.Parent = MainContainer
 
--- Info Text
 local InfoText = Instance.new("TextLabel")
 InfoText.Name = "Info"
 InfoText.Size = UDim2.new(1, 0, 0, 30)
@@ -246,7 +300,6 @@ InfoText.TextXAlignment = Enum.TextXAlignment.Left
 InfoText.ZIndex = 4
 InfoText.Parent = Content
 
--- Key Input Label
 local InputLabel = Instance.new("TextLabel")
 InputLabel.Name = "InputLabel"
 InputLabel.Size = UDim2.new(1, 0, 0, 16)
@@ -260,7 +313,6 @@ InputLabel.TextXAlignment = Enum.TextXAlignment.Left
 InputLabel.ZIndex = 4
 InputLabel.Parent = Content
 
--- Key Input Container
 local InputContainer = Instance.new("Frame")
 InputContainer.Name = "InputContainer"
 InputContainer.Size = UDim2.new(1, 0, 0, 38)
@@ -280,7 +332,6 @@ InputStroke.Thickness = 1
 InputStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 InputStroke.Parent = InputContainer
 
--- Key Input TextBox
 local KeyInput = Instance.new("TextBox")
 KeyInput.Name = "KeyInput"
 KeyInput.Size = UDim2.new(1, -16, 1, 0)
@@ -297,7 +348,6 @@ KeyInput.ClearTextOnFocus = false
 KeyInput.ZIndex = 5
 KeyInput.Parent = InputContainer
 
--- Remember Key Checkbox Container
 local CheckboxContainer = Instance.new("Frame")
 CheckboxContainer.Name = "CheckboxContainer"
 CheckboxContainer.Size = UDim2.new(1, 0, 0, 20)
@@ -306,7 +356,6 @@ CheckboxContainer.BackgroundTransparency = 1
 CheckboxContainer.ZIndex = 4
 CheckboxContainer.Parent = Content
 
--- Checkbox
 local Checkbox = Instance.new("TextButton")
 Checkbox.Name = "Checkbox"
 Checkbox.Size = UDim2.new(0, 18, 0, 18)
@@ -328,34 +377,36 @@ CheckboxStroke.Thickness = 1
 CheckboxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 CheckboxStroke.Parent = Checkbox
 
--- Checkmark
 local Checkmark = Instance.new("TextLabel")
 Checkmark.Size = UDim2.new(1, 0, 1, 0)
 Checkmark.BackgroundTransparency = 1
 Checkmark.Font = Enum.Font.GothamBold
-Checkmark.Text = "✓"
+Checkmark.Text = "v"
 Checkmark.TextColor3 = Config.AccentColor
 Checkmark.TextSize = 14
 Checkmark.Visible = false
 Checkmark.ZIndex = 6
 Checkmark.Parent = Checkbox
 
--- Checkbox Label
 local CheckboxLabel = Instance.new("TextLabel")
 CheckboxLabel.Size = UDim2.new(1, -25, 1, 0)
 CheckboxLabel.Position = UDim2.new(0, 25, 0, 0)
 CheckboxLabel.BackgroundTransparency = 1
 CheckboxLabel.Font = Enum.Font.Gotham
-CheckboxLabel.Text = "Remember key (saves to getgenv)"
+CheckboxLabel.Text = "Remember key (saves to file & getenv)"
 CheckboxLabel.TextColor3 = Config.TextSecondary
 CheckboxLabel.TextSize = 11
 CheckboxLabel.TextXAlignment = Enum.TextXAlignment.Left
 CheckboxLabel.ZIndex = 5
 CheckboxLabel.Parent = CheckboxContainer
 
-local rememberKey = false
+local rememberKey = LoadRememberPreference()
+if rememberKey then
+    Checkmark.Visible = true
+    Checkbox.BackgroundColor3 = Config.AccentColor
+    CheckboxStroke.Color = Config.AccentColor
+end
 
--- Verify Button
 local VerifyBtn = Instance.new("TextButton")
 VerifyBtn.Name = "VerifyBtn"
 VerifyBtn.Size = UDim2.new(1, 0, 0, 38)
@@ -374,7 +425,6 @@ local VerifyCorner = Instance.new("UICorner")
 VerifyCorner.CornerRadius = UDim.new(0, 4)
 VerifyCorner.Parent = VerifyBtn
 
--- Discord Button
 local DiscordBtn = Instance.new("TextButton")
 DiscordBtn.Name = "DiscordBtn"
 DiscordBtn.Size = UDim2.new(1, 0, 0, 38)
@@ -399,7 +449,6 @@ DiscordStroke.Thickness = 1
 DiscordStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 DiscordStroke.Parent = DiscordBtn
 
--- Footer
 local Footer = Instance.new("Frame")
 Footer.Name = "Footer"
 Footer.Size = UDim2.new(1, -40, 0, 20)
@@ -412,7 +461,7 @@ local FooterText = Instance.new("TextLabel")
 FooterText.Size = UDim2.new(1, 0, 1, 0)
 FooterText.BackgroundTransparency = 1
 FooterText.Font = Enum.Font.Gotham
-FooterText.Text = "⚠ New accounts or accounts without avatars will be banned"
+FooterText.Text = "New accounts or accounts without avatars will be banned"
 FooterText.TextColor3 = Config.TextSecondary
 FooterText.TextSize = 9
 FooterText.TextXAlignment = Enum.TextXAlignment.Left
@@ -420,7 +469,6 @@ FooterText.TextWrapped = true
 FooterText.ZIndex = 4
 FooterText.Parent = Footer
 
--- Status Indicator
 local StatusBar = Instance.new("Frame")
 StatusBar.Name = "StatusBar"
 StatusBar.Size = UDim2.new(1, 0, 0, 0)
@@ -434,10 +482,6 @@ StatusBar.Parent = MainContainer
 local StatusCorner = Instance.new("UICorner")
 StatusCorner.CornerRadius = UDim.new(0, 6)
 StatusCorner.Parent = StatusBar
-
--- ═══════════════════════════════════════════════════════════
---                      FUNCTIONS
--- ═══════════════════════════════════════════════════════════
 
 local function Tween(object, properties, duration)
     local tween = TweenService:Create(
@@ -478,11 +522,6 @@ local function ShowNotification(message, isError)
     StatusBar.Visible = false
 end
 
--- ═══════════════════════════════════════════════════════════
---                      INTERACTIONS
--- ═══════════════════════════════════════════════════════════
-
--- Button Hover Effects
 local function SetupButton(button, isAccent)
     local originalColor = button.BackgroundColor3
     local hoverColor = isAccent and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(32, 32, 32)
@@ -507,10 +546,10 @@ CloseBtn.MouseLeave:Connect(function()
     Tween(CloseBtn, {TextColor3 = Config.TextSecondary}, 0.2)
 end)
 
--- Checkbox Toggle
 Checkbox.MouseButton1Click:Connect(function()
     rememberKey = not rememberKey
     Checkmark.Visible = rememberKey
+    SaveRememberPreference(rememberKey)
     
     if rememberKey then
         Tween(Checkbox, {BackgroundColor3 = Config.AccentColor}, 0.2)
@@ -521,7 +560,6 @@ Checkbox.MouseButton1Click:Connect(function()
     end
 end)
 
--- Input Focus
 KeyInput.Focused:Connect(function()
     Tween(InputStroke, {Color = Config.AccentColor}, 0.2)
 end)
@@ -530,7 +568,6 @@ KeyInput.FocusLost:Connect(function()
     Tween(InputStroke, {Color = Config.BorderColor}, 0.2)
 end)
 
--- Verify Button
 VerifyBtn.MouseButton1Click:Connect(function()
     local key = KeyInput.Text
     
@@ -545,17 +582,14 @@ VerifyBtn.MouseButton1Click:Connect(function()
     task.wait(0.8)
     
     if ValidateKey(key) then
-        print("[KIRA] ✓ Correct key!")
+        print("[KIRA] Correct key!")
         VerifyBtn.Text = "ACCESS GRANTED"
         VerifyBtn.BackgroundColor3 = Config.SuccessColor
         
-        -- Save key to getgenv if checkbox is checked
         if rememberKey then
-            pcall(function()
-                getgenv().KiraKey = key
-                print("[KIRA] ✓ Key saved to getgenv()")
-                ShowNotification("Key saved! You won't need to enter it next time", false)
-            end)
+            SaveKeyToFile(key)
+            SaveKeyToGetenv(key)
+            ShowNotification("Key saved! You won't need to enter it next time", false)
         else
             ShowNotification("Authentication successful", false)
         end
@@ -566,7 +600,7 @@ VerifyBtn.MouseButton1Click:Connect(function()
         
         ExecuteMainScript()
     else
-        print("[KIRA] ✗ Wrong key!")
+        print("[KIRA] Wrong key!")
         VerifyBtn.Text = "INVALID KEY"
         VerifyBtn.BackgroundColor3 = Config.ErrorColor
         ShowNotification("Authentication failed - Invalid key", true)
@@ -579,12 +613,11 @@ VerifyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Discord Button
 DiscordBtn.MouseButton1Click:Connect(function()
     setclipboard(Config.DiscordServer)
     
     local originalText = DiscordBtn.Text
-    DiscordBtn.Text = "LINK COPIED TO CLIPBOARD"
+    DiscordBtn.Text = "LINK COPIED"
     DiscordBtn.BackgroundColor3 = Config.InputBackground
     
     task.wait(1.5)
@@ -593,12 +626,10 @@ DiscordBtn.MouseButton1Click:Connect(function()
     DiscordBtn.BackgroundColor3 = Config.SecondaryBackground
 end)
 
--- Close Button
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Draggable
 local dragging = false
 local dragInput, dragStart, startPos
 
@@ -634,5 +665,11 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
-print("[KIRA] ✓ Keysystem loaded successfully!")
+KeyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        VerifyBtn:TriggerEvent("MouseButton1Click")
+    end
+end)
+
+print("[KIRA] Keysystem loaded with persistent storage!")
 print("[KIRA] Enter key: " .. Config.CorrectKey)
